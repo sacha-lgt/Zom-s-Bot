@@ -8,9 +8,6 @@ const prefix = '!'
 bot.on('ready', () =>
 {
   console.log('Bot ready !')
-
-  //bot.user.setUsername('Zom\' Bot')
-  //bot.user.setAvatar('icon.jpg')
   bot.user.setActivity('être programmé')
 })
 
@@ -26,6 +23,7 @@ bot.on('message', (message) =>
     {
       //Welcome to you !
       case 'subscribe' :
+
         if (!member.roles.find('name', 'Abonnés'))
         {
           member.addRole(subRole)
@@ -39,6 +37,7 @@ bot.on('message', (message) =>
 
       //Shame on him
       case 'unsubscribe' :
+
         if (member.roles.find('name', 'Abonnés'))
         {
           member.removeRole(subRole)
@@ -51,8 +50,19 @@ bot.on('message', (message) =>
         break
 
       case 'me' :
-        let content = fs.readFileSync('./' + message.channel.guild.id + '.json')
+
+        let content = fs.readFileSync('./data/' + message.channel.guild.id + '.json')
         let jsonContent = JSON.parse(content)
+
+        let xp = 0
+        if (!jsonContent.hasOwnProperty(member.id))
+        {
+          xp = 0
+        }
+        else
+        {
+          xp = jsonContent[member.id]
+        }
 
         let roles = ''
         member.roles.forEach((role, id, map) =>
@@ -67,8 +77,8 @@ bot.on('message', (message) =>
           .setTitle(member.displayName)
           .setColor(randomColor())
           .setThumbnail(member.user.avatarURL)
-          .setDescription('· Niveau ' + Math.floor(jsonContent[member.id] / 1000) + ', (' + Math.floor(jsonContent[member.id] % 1000) + ' / 1000)' + '\n' +
-                          '· Experience totale : ' + jsonContent[member.id] + '\n' +
+          .setDescription('· Niveau ' + Math.floor(xp / 1000) + ', (' + Math.floor(xp % 1000) + ' / 1000)' + '\n' +
+                          '· Experience totale : ' + xp + '\n' +
                           '· Membre depuis ' + formatTime((Date.now() - member.joinedTimestamp) / 1000) + '\n' +
                           '· Rôles : ' + roles
                          )
@@ -78,22 +88,38 @@ bot.on('message', (message) =>
 
       //HELP ME !!!
       case 'help':
+
         let helpEmbed = new Discord.RichEmbed()
-          .setTitle('Help')
+          .setTitle('Aide')
           .setColor(randomColor())
           .setThumbnail(bot.user.avatarURL)
           .setDescription(
                           '· **' + prefix + 'subscribe** : Vous ajoute le rôle Abonné,' + '\n' +
                           '· **' + prefix + 'unsubscribe** : Vous retire le rôle Abonné,' + '\n' +
                           '· **' + prefix + 'me** : Donne des informations à votre sujet,' + '\n' +
-                          '· **' + prefix + 'ping** : Renvoie pong.'
+                          '· **' + prefix + 'ping** : Renvoie pong,' + '\n' +
+                          '. **' + prefix + 'social** : Donne le lien des réseaux sociaux.'
                          )
         message.channel.send(helpEmbed)
         break
 
       //This guy want to play ping-pong
       case 'ping' :
+
         message.channel.send('**PONG !** :hammer:')
+        break
+
+      case 'social' :
+
+        let socialEmbed = new Discord.RichEmbed()
+          .setTitle('Social')
+          .setColor(randomColor())
+          .setThumbnail(bot.user.avatarURL)
+          .setDescription(
+                          '· **Twitter : https://twitter.com/ZOm__YT**' + '\n' +
+                          '· **Youtube : https://www.youtube.com/c/ZomZD**'
+                         )
+        message.channel.send(socialEmbed)
         break
 
       //In the case of the guy said something weird...
@@ -117,22 +143,21 @@ bot.on('message', (message) =>
   if (!message.author.bot && !message.content.startsWith(prefix))
   {
     let exp = Math.floor(Math.random() * message.content.length - 5) + 5
-    let path = './' + message.channel.guild.id + '.json'
-    let userID = member.id
+    let path = './data/' + message.channel.guild.id + '.json'
 
     if (fs.existsSync(path))
     {
       let content = fs.readFileSync(path)
       let jsonContent = JSON.parse(content)
 
-      if (jsonContent.hasOwnProperty(userID))
+      if (jsonContent.hasOwnProperty(member.id))
       {
-        jsonContent[userID] = jsonContent[userID] + exp
+        jsonContent[member.id] = jsonContent[member.id] + exp
         fs.writeFileSync(path, JSON.stringify(jsonContent))
       }
       else
       {
-        jsonContent[userID] = exp
+        jsonContent[member.id] = exp
         fs.writeFileSync(path, JSON.stringify(jsonContent))
       }
     }
